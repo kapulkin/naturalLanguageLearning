@@ -1,0 +1,131 @@
+{
+    "words": {
+        "questionWords": [
+            {
+                "text": "Когда"
+            },
+            {
+                "text": "Где"
+            },
+            {
+                "text": "Сколько"
+            },
+            {
+                "text": "Почему"
+            },
+            {
+                "text": "Если"
+            }
+        ],
+        "verbs": [
+            {
+                "forms": {
+                    "infinitive": "хотеть",
+                    "conjugations": [
+                        {
+                            "singular": "хочу",
+                            "plural": "хотим"
+                        },
+                        {
+                            "singular": "хочешь",
+                            "plural": "хотите"
+                        },
+                        {
+                            "singular": "хочет",
+                            "plural": "хотят"
+                        }
+                    ]
+                },
+                "expectInfinitive": true,
+                "questions": []
+            },
+            {
+                "forms": {
+                    "infinitive": "мочь",
+                    "conjugations": [
+                        {
+                            "singular": "могу",
+                            "plural": "можем"
+                        },
+                        {
+                            "singular": "можешь",
+                            "plural": "можете"
+                        },
+                        {
+                            "singular": "может",
+                            "plural": "могут"
+                        }
+                    ]
+                },
+                "expectInfinitive": true,
+                "questions": []
+            },
+            {
+                "forms": {
+                    "infinitive": "долженствовать",
+                    "conjugations": [
+                        {
+                            "singular": "должен",
+                            "plural": "должны"
+                        },
+                        {
+                            "singular": "должен",
+                            "plural": "должны"
+                        },
+                        {
+                            "singular": "должен",
+                            "plural": "должны"
+                        }
+                    ]
+                },
+                "expectInfinitive": true,
+                "questions": []
+            },
+            {
+                "forms": {
+                    "infinitive": "учиться",
+                    "conjugations": [
+                        {
+                            "singular": "учусь",
+                            "plural": "учимся"
+                        },
+                        {
+                            "singular": "учишься",
+                            "plural": "учитесь"
+                        },
+                        {
+                            "singular": "учится",
+                            "plural": "учатся"
+                        }
+                    ]
+                },
+                "expectInfinitive": false,
+                "questions": []
+            },
+            {
+                "forms": {
+                    "infinitive": "говорить",
+                    "conjugations": [
+                        {
+                            "singular": "говорю",
+                            "plural": "говорим"
+                        },
+                        {
+                            "singular": "говоришь",
+                            "plural": "говорите"
+                        },
+                        {
+                            "singular": "говорит",
+                            "plural": "говорят"
+                        }
+                    ]
+                },
+                "expectInfinitive": false,
+                "questions": []
+            }
+        ]
+    },
+    "wordsToLearn": [
+        "говорить"
+    ]
+}
