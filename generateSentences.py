@@ -2,6 +2,7 @@ import argparse
 import json
 
 from enum import Enum, auto
+import math
 import re
 from typing import List, Dict
 from numpy import single
@@ -27,6 +28,7 @@ class VerbQuestion(Enum):
     ToWhom = auto()
     Whom = auto()
     WithWhom = auto()
+    AboutWhom = auto()
 
 class SingleOrPlural(Enum):
     Singular = auto()
@@ -40,7 +42,7 @@ class ConjugationType(Enum):
 
 class WordForm(BaseModel):
     conjugationType: ConjugationType
-    singleOrPlural: SingleOrPlural
+    singleOrPlural: SingleOrPlural | None = None
 
 class Word(BaseModel):
     type: WordType
@@ -139,26 +141,66 @@ def newOrAnyNotExpectsInfinitiveVerb(verbList: List[VerbWord], wordTextToWord: D
         return randomWordFromList(verbsToLearn)
     return randomWordFromList([verb for verb in verbList if not verb.expectInfinitive])
 
+class NextPartType(Enum):
+    Word = auto()
+    VerbQuestion = auto()
+
+class NextPart(BaseModel):
+    type: NextPartType
+    wordType: WordType | None = None
+    wordForm: WordForm | None = None
+    verbQuestion: VerbQuestion | None = None
+
+class SentenceGenerator:
+    def __init__(self, startWithQuestion: bool) -> None:
+        self.startWithQuestion = startWithQuestion
+        self.sentence = []    
+        if self.startWithQuestion:
+            self.nextPart = NextPart(type=NextPartType.Word, wordType=WordType.Question)
+        else:
+            self.nextPart = NextPart(type=NextPartType.Word, wordType=WordType.Pronoun)
+    
+    def generateNextPart(self, words: Words, wordTextToWord: Dict[str, Word], wordsToLearn: List[str]) -> bool:
+        match self.nextPart.type:
+            case NextPartType.Word:
+                match self.nextPart.wordType:
+                    case WordType.Question:
+                        self.sentence.append(wordText(
+                            newOrAnyWord(words.questionWords, wordTextToWord, wordsToLearn)
+                        ))
+                        self.nextPart = NextPart(type=NextPartType.Word, wordType=WordType.Pronoun)
+                    case WordType.Pronoun:
+                        pronoun = newOrAnyWord(words.pronouns, wordTextToWord, wordsToLearn)
+                        self.sentence.append(wordText(pronoun))
+                        self.nextPart = NextPart(type=NextPartType.Word, wordType=WordType.Verb, wordForm=pronounForm(pronoun))
+                    case WordType.Verb:
+                        wordForm = self.nextPart.wordForm
+                        if wordForm.conjugationType == ConjugationType.Infinitive:
+                            self.sentence.append(wordText(
+                                newOrAnyNotExpectsInfinitiveVerb(words.verbs, wordTextToWord, wordsToLearn)
+                            ))
+                            self.nextPart = None
+                        else:
+                            newVerb: VerbWord = newOrAnyVerb(words.verbs, wordTextToWord, wordsToLearn)
+                            self.sentence.append(verbTextInForm(newVerb, wordForm))
+                            if newVerb.expectInfinitive:
+                                self.nextPart = NextPart(type=NextPartType.Word, wordType=WordType.Verb, wordForm=WordForm(conjugationType=ConjugationType.Infinitive))
+                            else:
+                                self.nextPart = None
+            case NextPartType.VerbQuestion:
+                self.nextPart = None
+        return self.nextPart != None
+
 def generateSentence(words: Words, wordTextToWord: Dict[str, Word], wordsToLearn: List[str]):
     startWithQuestion = any(
         [wordTextToWord[wordText].type == WordType.Question for wordText in wordsToLearn]
     ) or bool(random.getrandbits(1))
     
-    sentence = []
+    sentenceGenerator = SentenceGenerator(startWithQuestion)
+    while sentenceGenerator.generateNextPart(words, wordTextToWord, wordsToLearn):
+        pass
 
-    if startWithQuestion:
-        sentence.append(wordText(
-            newOrAnyWord(words.questionWords, wordTextToWord, wordsToLearn)
-        ))
-
-    pronoun = newOrAnyWord(words.pronouns, wordTextToWord, wordsToLearn)
-    sentence.append(wordText(pronoun))
-    newVerb: VerbWord = newOrAnyVerb(words.verbs, wordTextToWord, wordsToLearn)
-    sentence.append(verbTextInForm(newVerb, pronounForm(pronoun)))
-    if (newVerb.expectInfinitive):
-        sentence.append(wordText(
-            newOrAnyNotExpectsInfinitiveVerb(words.verbs, wordTextToWord, wordsToLearn)
-        ))
+    sentence = sentenceGenerator.sentence
 
     sentence[0] = sentence[0].capitalize()
     return " ".join(sentence)
@@ -181,11 +223,13 @@ def main():
     for pronounName in PronounName:
         words.pronouns.append(PronounWord(type = WordType.Pronoun, pronounName=pronounName))
     for verb in config["words"]["verbs"]:
+        verb["questions"] = [VerbQuestion[question] for question in verb["questions"]]
         words.verbs.append(VerbWord(type = WordType.Verb, **verb))
-
-    wordsToLearn: List[str] = config["wordsToLearn"]
-    wordsToLearn = [word.lower() for word in wordsToLearn]
     wordTextToWord = makeWordsByText(words)
+
+    learn = config["learn"]
+    wordsToLearn: List[str] = learn["words"]
+    wordsToLearn = [word.lower() for word in wordsToLearn]
 
     sentence = generateSentence(
         words,

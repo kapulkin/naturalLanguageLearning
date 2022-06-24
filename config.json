@@ -100,7 +100,8 @@
                     ]
                 },
                 "expectInfinitive": false,
-                "questions": []
+                "questions": [
+                ]
             },
             {
                 "forms": {
@@ -121,11 +122,41 @@
                     ]
                 },
                 "expectInfinitive": false,
-                "questions": []
-            }
+                "questions": [
+                    "ToWhom"
+                ]
+            },
+            {
+                "forms": {
+                    "infinitive": "спросить",
+                    "conjugations": [
+                        {
+                            "singular": "спрашиваю",
+                            "plural": "спрашиваем"
+                        },
+                        {
+                            "singular": "спроси",
+                            "plural": "спросите"
+                        },
+                        {
+                            "singular": "спросит",
+                            "plural": "спросят"
+                        }
+                    ]
+                },
+                "expectInfinitive": false,
+                "questions": [
+                    "Whom"
+                ]
+            }            
         ]
     },
-    "wordsToLearn": [
-        "говорить"
-    ]
+    "learn": {
+        "words": [
+            "говорить"
+        ],
+        "questions": [
+            ""
+        ]
+    }
 }
