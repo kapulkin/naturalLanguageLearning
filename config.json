@@ -123,7 +123,7 @@
                 },
                 "expectInfinitive": false,
                 "questions": [
-                    "ToWhom"
+                    "ToWhom", "AboutWhom"
                 ]
             },
             {
@@ -153,7 +153,6 @@
     },
     "learn": {
         "words": [
-            "говорить"
         ],
         "questions": [
             ""

@@ -99,9 +99,48 @@ def pronounForm(pronoun: PronounWord) -> WordForm:
         case PronounName.They:
             return WordForm(conjugationType=ConjugationType.Third, singleOrPlural=SingleOrPlural.Plural)
 
+def pronounAtFormOfQuestion(pronounName: PronounName, verbQuestion: VerbQuestion) -> List[str]:
+    match verbQuestion:
+        case VerbQuestion.ToWhom:
+            match pronounName:
+                case PronounName.I: return ["мне"]
+                case PronounName.We: return ["нам"]
+                case PronounName.You: return ["тебе"]
+                case PronounName.YouPlural: return ["вам"]
+                case PronounName.He: return ["ему"]
+                case PronounName.She: return ["ей"]
+                case PronounName.They: return ["им"]
+        case VerbQuestion.Whom:
+            match pronounName:
+                case PronounName.I: return ["меня"]
+                case PronounName.We: return ["нас"]
+                case PronounName.You: return ["тебя"]
+                case PronounName.YouPlural: return ["вас"]
+                case PronounName.He: return ["его"]
+                case PronounName.She: return ["ее"]
+                case PronounName.They: return ["их"]
+        case VerbQuestion.WithWhom:
+            match pronounName:
+                case PronounName.I: return ["со", "мной"]
+                case PronounName.We: return ["с", "нами"]
+                case PronounName.You: return ["с", "тобой"]
+                case PronounName.YouPlural: return ["с", "вами"]
+                case PronounName.He: return ["с", "ним"]
+                case PronounName.She: return ["с", "ней"]
+                case PronounName.They: return ["с", "ними"]
+        case VerbQuestion.AboutWhom:
+            match pronounName:
+                case PronounName.I: return ["обо", "мне"]
+                case PronounName.We: return ["о", "нас"]
+                case PronounName.You: return ["о", "тебе"]
+                case PronounName.YouPlural: return ["о", "вас"]
+                case PronounName.He: return ["о", "нем"]
+                case PronounName.She: return ["о", "ней"]
+                case PronounName.They: return ["о", "них"]
+
 @textLowercase
 def verbTextInForm(verb: VerbWord, form: WordForm) -> str:
-    match(form.conjugationType):
+    match form.conjugationType:
         case ConjugationType.Infinitive:
             return verb.forms.infinitive
         case _:
@@ -176,18 +215,30 @@ class SentenceGenerator:
                     case WordType.Verb:
                         wordForm = self.nextPart.wordForm
                         if wordForm.conjugationType == ConjugationType.Infinitive:
-                            self.sentence.append(wordText(
-                                newOrAnyNotExpectsInfinitiveVerb(words.verbs, wordTextToWord, wordsToLearn)
-                            ))
-                            self.nextPart = None
+                            newVerb = newOrAnyNotExpectsInfinitiveVerb(words.verbs, wordTextToWord, wordsToLearn)
+                            self.sentence.append(wordText(newVerb))
+
+                            if len(newVerb.questions) > 0 and bool(random.getrandbits(1)):
+                                option = random.randrange(0, len(newVerb.questions))
+                                self.nextPart = NextPart(type=NextPartType.VerbQuestion, verbQuestion=newVerb.questions[option])
+                            else:
+                                self.nextPart = None
                         else:
                             newVerb: VerbWord = newOrAnyVerb(words.verbs, wordTextToWord, wordsToLearn)
                             self.sentence.append(verbTextInForm(newVerb, wordForm))
-                            if newVerb.expectInfinitive:
-                                self.nextPart = NextPart(type=NextPartType.Word, wordType=WordType.Verb, wordForm=WordForm(conjugationType=ConjugationType.Infinitive))
+                            nextOptionsCount = len(newVerb.questions) + (1 if newVerb.expectInfinitive else 0)
+                            if nextOptionsCount > 0:
+                                option = random.randrange(0, nextOptionsCount)
+                                if option < len(newVerb.questions):
+                                    self.nextPart = NextPart(type=NextPartType.VerbQuestion, verbQuestion=newVerb.questions[option])
+                                else:
+                                    self.nextPart = NextPart(type=NextPartType.Word, wordType=WordType.Verb, wordForm=WordForm(conjugationType=ConjugationType.Infinitive))
                             else:
                                 self.nextPart = None
             case NextPartType.VerbQuestion:
+                pronounName = list(PronounName)[random.randrange(0, len(PronounName))]
+                words = pronounAtFormOfQuestion(pronounName, self.nextPart.verbQuestion)
+                self.sentence += words
                 self.nextPart = None
         return self.nextPart != None
 
